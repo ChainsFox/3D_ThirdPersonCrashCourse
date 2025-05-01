@@ -6,10 +6,13 @@ using UnityEngine.InputSystem;
 
 namespace Player_Assets.FinalCharacterController
 {
+    [DefaultExecutionOrder(-2)] //this script always run before other scripts
     public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomotionMapActions
     {
         public PlayerControls PlayerControls {  get; private set; }
         public Vector2 MovementInput { get; private set; }
+
+        public Vector2 LookInput { get; private set; }
 
         private void OnEnable()
         {
@@ -29,11 +32,13 @@ namespace Player_Assets.FinalCharacterController
 
         public void OnMovement(InputAction.CallbackContext context)
         {
-            MovementInput = context.ReadValue<Vector2>();
+            MovementInput = context.ReadValue<Vector2>(); //we printing out direction in a vector 2 format - use to control player movement
             print(MovementInput);
         }
 
-
-
+        public void OnLook(InputAction.CallbackContext context)
+        {
+            LookInput = context.ReadValue<Vector2>();
+        }
     }
 }
