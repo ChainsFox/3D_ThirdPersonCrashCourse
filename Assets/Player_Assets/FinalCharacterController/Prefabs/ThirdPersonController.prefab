@@ -2159,6 +2159,8 @@ GameObject:
   - component: {fileID: 1674261026322956479}
   - component: {fileID: 1758041362498380309}
   - component: {fileID: 8520504775035885747}
+  - component: {fileID: 7268229409193109875}
+  - component: {fileID: 236230436004490950}
   m_Layer: 0
   m_Name: ThirdPersonController
   m_TagString: Untagged
@@ -2264,6 +2266,33 @@ MonoBehaviour:
   lookSenseH: 0.1
   lookSenseV: 0.1
   lookLimitV: 70
+--- !u!114 &7268229409193109875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2302463400223729398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddd5691f3c142524998773600abdf863, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <CurrentPlayerMovementState>k__BackingField: 0
+--- !u!114 &236230436004490950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2302463400223729398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4754980350d15ff4581f26ad9f737de9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 7670374934215718194}
+  locomotionBlendSpeed: 8
 --- !u!1 &2461892806501671831
 GameObject:
   m_ObjectHideFlags: 0

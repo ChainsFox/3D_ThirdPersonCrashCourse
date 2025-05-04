@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace Player_Assets.FinalCharacterController
@@ -7,6 +8,7 @@ namespace Player_Assets.FinalCharacterController
     [DefaultExecutionOrder(-1)]
     public class PlayerController : MonoBehaviour
     {
+        #region Class Variables
         [Header("Components")]
         [SerializeField] private CharacterController _characterController; //"_" - underscore to represent private member field(recommend for c#)
         [SerializeField] private Camera _playerCamera;
@@ -15,6 +17,7 @@ namespace Player_Assets.FinalCharacterController
         public float runAcceleration = 0.25f;
         public float runSpeed = 4f;
         public float drag = 0.1f;
+        public float movingThreshold = 0.01f;
 
         [Header("Camera Settings")]
         public float lookSenseH = 0.1f;
@@ -22,16 +25,41 @@ namespace Player_Assets.FinalCharacterController
         public float lookLimitV = 89f; //clamp how high/low of an angle we can look, so that we dont spin around weirdly
 
         private PlayerLocomotionInput _playerLocomotionInput;
+        private PlayerState _playerState;
         private Vector2 _cameraRotation = Vector2.zero;
         private Vector2 _playerTargetRotation = Vector2.zero; //need both camera and player rotation to animate correctly
+        #endregion
 
-
+        #region Startup
         private void Awake()
         {
             _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
+            _playerState = GetComponent<PlayerState>();
+        }
+        #endregion
+
+        #region Update Logic
+        private void Update()
+        {
+            UpdateMovementState();
+            HandLateralMovement();
+
         }
 
-        private void Update()
+        private void UpdateMovementState()
+        {
+            bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero;
+            bool isMovingLaterally = IsMovingLaterally();
+
+            PlayerMovementState lateralState = isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling; //if we moving laterally or there is movement input, then we are in running state, else we are idling
+            _playerState.SetPlayerMovementState(lateralState);
+
+
+        }
+
+
+
+        private void HandLateralMovement()
         {
             Vector3 cameraForwardXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
             Vector3 cameraRightXZ = new Vector3(_playerCamera.transform.right.x, 0f, _playerCamera.transform.right.z).normalized;
@@ -48,9 +76,12 @@ namespace Player_Assets.FinalCharacterController
 
             //Move charater (unity suggest only calling this once per tick)
             _characterController.Move(newVelocity * Time.deltaTime); //physically move the player
-
         }
 
+        #endregion
+
+
+        #region Late Update Logic
         private void LateUpdate()
         {
             //Camera Logic/rotation is recommended after the movement logic   
@@ -63,9 +94,16 @@ namespace Player_Assets.FinalCharacterController
 
             _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.y, 0f);
         }
+        #endregion
 
+        #region State Checks
+        private bool IsMovingLaterally()
+        {
+            Vector3 lateralVelocity = new Vector3(_characterController.velocity.x, 0f, _characterController.velocity.z);
 
-
+            return lateralVelocity.magnitude > movingThreshold;
+        }
+        #endregion
 
 
 
