@@ -16,7 +16,7 @@ namespace Player_Assets.FinalCharacterController
 
 
     }
-    public enum PlayerMovementState
+    public enum PlayerMovementState //put it outside for easier access from other script, without having to declare this script
     {
         Idling = 0,
         Walking = 1,
