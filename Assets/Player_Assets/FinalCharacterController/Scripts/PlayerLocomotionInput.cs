@@ -9,6 +9,9 @@ namespace Player_Assets.FinalCharacterController
     [DefaultExecutionOrder(-2)] //this script always run before other scripts
     public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomotionMapActions
     {
+        [SerializeField] private bool holdToSprint = true;
+
+        public bool SprintToggledOn { get; private set; }
         public PlayerControls PlayerControls {  get; private set; }
         public Vector2 MovementInput { get; private set; }
 
@@ -40,5 +43,23 @@ namespace Player_Assets.FinalCharacterController
         {
             LookInput = context.ReadValue<Vector2>();
         }
+
+        public void OnToggleSprint(InputAction.CallbackContext context)
+        {
+            if(context.performed)
+            {
+                SprintToggledOn = holdToSprint || !SprintToggledOn; //hold to sprint is true or sprint toggled on false
+            }
+            else if(context.canceled)
+            {
+                SprintToggledOn = !holdToSprint && SprintToggledOn;
+            }
+        }
+
+
+
     }
+
+
+
 }

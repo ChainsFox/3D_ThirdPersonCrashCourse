@@ -2246,6 +2246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7356b6f239429bb4786515d86febc78c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  holdToSprint: 1
 --- !u!114 &8520504775035885747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2260,9 +2261,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _characterController: {fileID: 1674261026322956479}
   _playerCamera: {fileID: 255825569779764186}
-  runAcceleration: 50
+  runAcceleration: 35
   runSpeed: 4
-  drag: 30
+  sprintAcceleration: 50
+  sprintSpeed: 7
+  drag: 15
+  movingThreshold: 0.01
   lookSenseH: 0.1
   lookSenseV: 0.1
   lookLimitV: 70

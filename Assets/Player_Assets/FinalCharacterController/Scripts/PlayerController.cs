@@ -16,6 +16,8 @@ namespace Player_Assets.FinalCharacterController
         [Header("Base Movement")]
         public float runAcceleration = 0.25f;
         public float runSpeed = 4f;
+        public float sprintAcceleration = 0.5f;
+        public float sprintSpeed = 7.0f;
         public float drag = 0.1f;
         public float movingThreshold = 0.01f;
 
@@ -48,10 +50,12 @@ namespace Player_Assets.FinalCharacterController
 
         private void UpdateMovementState()
         {
-            bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero;
+            bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero; //order matters
             bool isMovingLaterally = IsMovingLaterally();
+            bool isSprinting = _playerLocomotionInput.SprintToggledOn && isMovingLaterally;
 
-            PlayerMovementState lateralState = isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling; //if we moving laterally or there is movement input, then we are in running state, else we are idling
+            PlayerMovementState lateralState = isSprinting ? PlayerMovementState.Sprinting : //check if we are sprinting, if not we are running or idling
+                isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling; //if we moving laterally or there is movement input, then we are in running state, else we are idling
             _playerState.SetPlayerMovementState(lateralState);
 
 
@@ -61,17 +65,25 @@ namespace Player_Assets.FinalCharacterController
 
         private void HandLateralMovement()
         {
+            //Create quick references for current state
+            bool isSprinting = _playerState.CurrentPlayerMovementState == PlayerMovementState.Sprinting;
+
+            //State  dependent acceleration and speed
+            float lateralAcceleration = isSprinting ? sprintAcceleration : runAcceleration; //if we sprinting we going at sprint acceleration, else, run acceleration
+            float clampLateralMagnitude = isSprinting ? sprintSpeed : runSpeed; //same like above but with sprint/run speed 
+
+
             Vector3 cameraForwardXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
             Vector3 cameraRightXZ = new Vector3(_playerCamera.transform.right.x, 0f, _playerCamera.transform.right.z).normalized;
             Vector3 movementDirection = cameraRightXZ * _playerLocomotionInput.MovementInput.x + cameraForwardXZ * _playerLocomotionInput.MovementInput.y; //"movementDirection" - multiply the camera current facing direction with our movement input ->The direction we move to, is base on the camera
 
-            Vector3 movementDelta = movementDirection * runAcceleration * Time.deltaTime; //movementDelta - is how much our player move this frame
+            Vector3 movementDelta = movementDirection * lateralAcceleration * Time.deltaTime; //movementDelta - is how much our player move this frame
             Vector3 newVelocity = _characterController.velocity + movementDelta; //move the player into new velocity/position
 
             //Add drag to player
             Vector3 currentDrag = newVelocity.normalized * drag * Time.deltaTime;
             newVelocity = (newVelocity.magnitude > drag * Time.deltaTime) ? newVelocity - currentDrag : Vector3.zero; //this is a ternary operator(basically a if else statement in 1 line)
-            newVelocity = Vector3.ClampMagnitude(newVelocity, runSpeed);// to make sure our acceleration doesn't go further than our maxium run speed
+            newVelocity = Vector3.ClampMagnitude(newVelocity, clampLateralMagnitude);// to make sure our acceleration doesn't go further than our maxium run speed
 
 
             //Move charater (unity suggest only calling this once per tick)

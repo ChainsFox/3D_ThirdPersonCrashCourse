@@ -46,6 +46,15 @@ namespace Player_Assets.FinalCharacterController
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""ToggleSprint"",
+                    ""type"": ""Button"",
+                    ""id"": ""672c910a-7651-41d4-9262-93952da2ad97"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -169,6 +178,17 @@ namespace Player_Assets.FinalCharacterController
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1de1be94-1dcd-4c3f-bf02-224caa3b02c5"",
+                    ""path"": ""<Keyboard>/leftShift"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleSprint"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -179,6 +199,7 @@ namespace Player_Assets.FinalCharacterController
             m_PlayerLocomotionMap = asset.FindActionMap("PlayerLocomotionMap", throwIfNotFound: true);
             m_PlayerLocomotionMap_Movement = m_PlayerLocomotionMap.FindAction("Movement", throwIfNotFound: true);
             m_PlayerLocomotionMap_Look = m_PlayerLocomotionMap.FindAction("Look", throwIfNotFound: true);
+            m_PlayerLocomotionMap_ToggleSprint = m_PlayerLocomotionMap.FindAction("ToggleSprint", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -242,12 +263,14 @@ namespace Player_Assets.FinalCharacterController
         private List<IPlayerLocomotionMapActions> m_PlayerLocomotionMapActionsCallbackInterfaces = new List<IPlayerLocomotionMapActions>();
         private readonly InputAction m_PlayerLocomotionMap_Movement;
         private readonly InputAction m_PlayerLocomotionMap_Look;
+        private readonly InputAction m_PlayerLocomotionMap_ToggleSprint;
         public struct PlayerLocomotionMapActions
         {
             private @PlayerControls m_Wrapper;
             public PlayerLocomotionMapActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
             public InputAction @Movement => m_Wrapper.m_PlayerLocomotionMap_Movement;
             public InputAction @Look => m_Wrapper.m_PlayerLocomotionMap_Look;
+            public InputAction @ToggleSprint => m_Wrapper.m_PlayerLocomotionMap_ToggleSprint;
             public InputActionMap Get() { return m_Wrapper.m_PlayerLocomotionMap; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -263,6 +286,9 @@ namespace Player_Assets.FinalCharacterController
                 @Look.started += instance.OnLook;
                 @Look.performed += instance.OnLook;
                 @Look.canceled += instance.OnLook;
+                @ToggleSprint.started += instance.OnToggleSprint;
+                @ToggleSprint.performed += instance.OnToggleSprint;
+                @ToggleSprint.canceled += instance.OnToggleSprint;
             }
 
             private void UnregisterCallbacks(IPlayerLocomotionMapActions instance)
@@ -273,6 +299,9 @@ namespace Player_Assets.FinalCharacterController
                 @Look.started -= instance.OnLook;
                 @Look.performed -= instance.OnLook;
                 @Look.canceled -= instance.OnLook;
+                @ToggleSprint.started -= instance.OnToggleSprint;
+                @ToggleSprint.performed -= instance.OnToggleSprint;
+                @ToggleSprint.canceled -= instance.OnToggleSprint;
             }
 
             public void RemoveCallbacks(IPlayerLocomotionMapActions instance)
@@ -294,6 +323,7 @@ namespace Player_Assets.FinalCharacterController
         {
             void OnMovement(InputAction.CallbackContext context);
             void OnLook(InputAction.CallbackContext context);
+            void OnToggleSprint(InputAction.CallbackContext context);
         }
     }
 }
