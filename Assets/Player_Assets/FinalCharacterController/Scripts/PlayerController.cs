@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -19,6 +20,8 @@ namespace Player_Assets.FinalCharacterController
         public float sprintAcceleration = 0.5f;
         public float sprintSpeed = 7.0f;
         public float drag = 0.1f;
+        public float gravity = 25f;
+        public float jumpSpeed = 1.0f;
         public float movingThreshold = 0.01f;
 
         [Header("Camera Settings")]
@@ -30,6 +33,8 @@ namespace Player_Assets.FinalCharacterController
         private PlayerState _playerState;
         private Vector2 _cameraRotation = Vector2.zero;
         private Vector2 _playerTargetRotation = Vector2.zero; //need both camera and player rotation to animate correctly
+        private float _verticalVelocity = 0f;
+
         #endregion
 
         #region Startup
@@ -44,7 +49,8 @@ namespace Player_Assets.FinalCharacterController
         private void Update()
         {
             UpdateMovementState();
-            HandLateralMovement();
+            HandleVerticalMovement();
+            HandleLateralMovement();
 
         }
 
@@ -53,20 +59,46 @@ namespace Player_Assets.FinalCharacterController
             bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero; //order matters
             bool isMovingLaterally = IsMovingLaterally();
             bool isSprinting = _playerLocomotionInput.SprintToggledOn && isMovingLaterally;
+            bool isGrounded = IsGrounded();
 
             PlayerMovementState lateralState = isSprinting ? PlayerMovementState.Sprinting : //check if we are sprinting, if not we are running or idling
                 isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling; //if we moving laterally or there is movement input, then we are in running state, else we are idling
             _playerState.SetPlayerMovementState(lateralState);
 
+            //Control Airborn State
+            if(!isGrounded && _characterController.velocity.y >= 0)
+            {
+                _playerState.SetPlayerMovementState(PlayerMovementState.Jumping);
+            }
+            else if(!isGrounded && _characterController.velocity.y < 0)
+            {
+                _playerState.SetPlayerMovementState(PlayerMovementState.Falling);
+            }
 
         }
 
+        private void HandleVerticalMovement()
+        {
+            bool isGrounded = _playerState.InGroundedState();
 
+            if (isGrounded && _verticalVelocity < 0)
+                _verticalVelocity = 0f; //we dont want to be moving down if we already grounded
 
-        private void HandLateralMovement()
+            _verticalVelocity -= gravity * Time.deltaTime;
+
+            if(_playerLocomotionInput.JumpPressed && isGrounded)
+            {
+                _verticalVelocity += Mathf.Sqrt(jumpSpeed * 3 * gravity);
+            } 
+                
+
+        }
+
+        private void HandleLateralMovement()
         {
             //Create quick references for current state
             bool isSprinting = _playerState.CurrentPlayerMovementState == PlayerMovementState.Sprinting;
+            bool isGrounded = _playerState.InGroundedState();
 
             //State  dependent acceleration and speed
             float lateralAcceleration = isSprinting ? sprintAcceleration : runAcceleration; //if we sprinting we going at sprint acceleration, else, run acceleration
@@ -84,6 +116,7 @@ namespace Player_Assets.FinalCharacterController
             Vector3 currentDrag = newVelocity.normalized * drag * Time.deltaTime;
             newVelocity = (newVelocity.magnitude > drag * Time.deltaTime) ? newVelocity - currentDrag : Vector3.zero; //this is a ternary operator(basically a if else statement in 1 line)
             newVelocity = Vector3.ClampMagnitude(newVelocity, clampLateralMagnitude);// to make sure our acceleration doesn't go further than our maxium run speed
+            newVelocity.y += _verticalVelocity;
 
 
             //Move charater (unity suggest only calling this once per tick)
@@ -106,6 +139,12 @@ namespace Player_Assets.FinalCharacterController
 
             _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.y, 0f);
         }
+
+        private bool IsGrounded()
+        {
+            return _characterController.isGrounded;
+        }
+
         #endregion
 
         #region State Checks

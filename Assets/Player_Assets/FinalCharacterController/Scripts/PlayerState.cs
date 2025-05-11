@@ -13,7 +13,14 @@ namespace Player_Assets.FinalCharacterController
         {
             CurrentPlayerMovementState = playerMovementState;
         }
-
+        
+        public bool InGroundedState()
+        {//return true if we are in idling, walking... state
+            return CurrentPlayerMovementState == PlayerMovementState.Idling ||
+                    CurrentPlayerMovementState == PlayerMovementState.Walking ||
+                    CurrentPlayerMovementState == PlayerMovementState.Running ||
+                    CurrentPlayerMovementState == PlayerMovementState.Sprinting;
+        }
 
     }
     public enum PlayerMovementState //put it outside for easier access from other script, without having to declare this script

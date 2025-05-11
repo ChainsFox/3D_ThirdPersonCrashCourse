@@ -9,6 +9,7 @@ namespace Player_Assets.FinalCharacterController
     [DefaultExecutionOrder(-2)] //this script always run before other scripts
     public class PlayerLocomotionInput : MonoBehaviour, PlayerControls.IPlayerLocomotionMapActions
     {
+        #region Class Variables
         [SerializeField] private bool holdToSprint = true;
 
         public bool SprintToggledOn { get; private set; }
@@ -17,6 +18,10 @@ namespace Player_Assets.FinalCharacterController
 
         public Vector2 LookInput { get; private set; }
 
+        public bool JumpPressed { get; private set; }
+        #endregion
+
+        #region Startup
         private void OnEnable()
         {
             PlayerControls = new PlayerControls();
@@ -32,7 +37,16 @@ namespace Player_Assets.FinalCharacterController
             PlayerControls.PlayerLocomotionMap.Disable();
             PlayerControls.PlayerLocomotionMap.RemoveCallbacks(this);
         }
+        #endregion
 
+        #region Late Update Logic
+        private void LateUpdate()
+        {
+            JumpPressed = false;
+        }
+        #endregion
+
+        #region Input Callbacks
         public void OnMovement(InputAction.CallbackContext context)
         {
             MovementInput = context.ReadValue<Vector2>(); //we printing out direction in a vector 2 format - use to control player movement
@@ -56,7 +70,14 @@ namespace Player_Assets.FinalCharacterController
             }
         }
 
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            if (!context.performed) //we dont do any of the code below "return", if space bar isn't held down
+                return;
 
+            JumpPressed = true;
+        }
+        #endregion
 
     }
 
