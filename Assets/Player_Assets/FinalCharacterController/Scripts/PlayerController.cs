@@ -13,6 +13,9 @@ namespace Player_Assets.FinalCharacterController
         [Header("Components")]
         [SerializeField] private CharacterController _characterController; //"_" - underscore to represent private member field(recommend for c#)
         [SerializeField] private Camera _playerCamera;
+        public float RotationMismatch { get; private set; } = 0f;
+        public bool IsRotatingToTarget { get; private set; } = false;
+
 
         [Header("Base Movement")]
         public float runAcceleration = 0.25f;
@@ -24,6 +27,11 @@ namespace Player_Assets.FinalCharacterController
         public float jumpSpeed = 1.0f;
         public float movingThreshold = 0.01f;
 
+        [Header("Animation")]
+        public float playerModelRotationSpeed = 10f;
+        public float rotateToTargetTime = 0.25f; //these 2 control how quickly the player is gonna rotate
+
+
         [Header("Camera Settings")]
         public float lookSenseH = 0.1f;
         public float lookSenseV = 0.1f;
@@ -31,8 +39,11 @@ namespace Player_Assets.FinalCharacterController
 
         private PlayerLocomotionInput _playerLocomotionInput;
         private PlayerState _playerState;
+
         private Vector2 _cameraRotation = Vector2.zero;
         private Vector2 _playerTargetRotation = Vector2.zero; //need both camera and player rotation to animate correctly
+
+        private float _rotatingToTargetTimer = 0f;
         private float _verticalVelocity = 0f;
 
         #endregion
@@ -129,20 +140,48 @@ namespace Player_Assets.FinalCharacterController
         #region Late Update Logic
         private void LateUpdate()
         {
+            UpdateCameraRotation();
+        }
+
+        private bool IsGrounded()
+        {
+            return _characterController.isGrounded;
+        }
+
+        private void UpdateCameraRotation()
+        {
             //Camera Logic/rotation is recommended after the movement logic   
 
             _cameraRotation.x += lookSenseH * _playerLocomotionInput.LookInput.x;
             _cameraRotation.y = Mathf.Clamp(_cameraRotation.y - lookSenseV * _playerLocomotionInput.LookInput.y, -lookLimitV, lookLimitV);
 
             _playerTargetRotation.x += transform.eulerAngles.x + lookSenseH * _playerLocomotionInput.LookInput.x;
-            transform.rotation = Quaternion.Euler(0f, _playerTargetRotation.x, 0f);
+
+            //if rotation mismatch not within tolerance, or rotate to target is active, ROTATE
+            //also rotate if we're not idling 
+            float rotationTolerance = 90f; //rotation threshold/limit
+            bool isIdling = _playerState.CurrentPlayerMovementState == PlayerMovementState.Idling;
+            IsRotatingToTarget = _rotatingToTargetTimer > 0f;
+            if(!isIdling || Mathf.Abs(RotationMismatch) > rotationTolerance || IsRotatingToTarget)
+            {
+                Quaternion targetRotationX = Quaternion.Euler(0f, _playerTargetRotation.x, 0f);
+                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotationX, playerModelRotationSpeed * Time.deltaTime);
+
+                if(Mathf.Abs(RotationMismatch) > rotationTolerance)//when the camera > 90f, the player will start to rotate in this amount of time(rotate to target time), and will be reset again after it reaches 0
+                {
+                    _rotatingToTargetTimer = rotateToTargetTime; 
+                }
+                _rotatingToTargetTimer -= Time.deltaTime;
+            }
 
             _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.y, 0f);
-        }
 
-        private bool IsGrounded()
-        {
-            return _characterController.isGrounded;
+            //get angle between camera and player, update rotation mismatch(IMPORTANT - Try to understand this if you can)
+            Vector3 camForwardProjectedXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized; //XZ mean in the xz plane(look at picture online)
+            Vector3 crossProduct = Vector3.Cross(transform.forward, camForwardProjectedXZ);
+            float sign = Mathf.Sign(Vector3.Dot(crossProduct, transform.up));
+            RotationMismatch = sign * Vector3.Angle(transform.forward, camForwardProjectedXZ);
+
         }
 
         #endregion
