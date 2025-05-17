@@ -11,13 +11,17 @@ namespace Player_Assets.FinalCharacterController
 
         private PlayerLocomotionInput _playerLocomotionInput;
         private PlayerState _playerState;
+        private PlayerController _playerController;
 
         private static int inputXHash = Animator.StringToHash("inputX");
         private static int inputYHash = Animator.StringToHash("inputY");
         private static int inputMagnitudeHash = Animator.StringToHash("inputMagnitude");
+        private static int isIdlingHash = Animator.StringToHash("isIdling");
         private static int isGroundedHash = Animator.StringToHash("isGrounded");
         private static int isFallingHash = Animator.StringToHash("isFalling");
         private static int isJumpingHash = Animator.StringToHash("isJumping");
+        private static int isRotatingToTargetHash = Animator.StringToHash("isRotatingToTarget");
+        private static int rotationMismatchHash = Animator.StringToHash("rotationMismatch");
 
         private Vector3 _currentBlendInput = Vector3.zero; //default zero value for blend input
 
@@ -25,6 +29,7 @@ namespace Player_Assets.FinalCharacterController
         {
             _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
             _playerState = GetComponent<PlayerState>();
+            _playerController = GetComponent<PlayerController>();
         }
 
         private void Update()
@@ -46,11 +51,16 @@ namespace Player_Assets.FinalCharacterController
 
 
             _animator.SetBool(isGroundedHash, isGrounded); //to keep boolean animator parameter properly updated
+            _animator.SetBool(isIdlingHash, isIdling);
             _animator.SetBool(isFallingHash, isFalling);
             _animator.SetBool(isJumpingHash, isJumping);
+            _animator.SetBool(isRotatingToTargetHash, _playerController.IsRotatingToTarget);
+
+
             _animator.SetFloat(inputXHash, _currentBlendInput.x); //set the value for animation
             _animator.SetFloat(inputYHash, _currentBlendInput.y);
             _animator.SetFloat(inputMagnitudeHash, _currentBlendInput.magnitude);
+            _animator.SetFloat(rotationMismatchHash, _playerController.RotationMismatch);
 
         }
 

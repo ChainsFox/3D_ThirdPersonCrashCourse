@@ -43,6 +43,7 @@ namespace Player_Assets.FinalCharacterController
         private Vector2 _cameraRotation = Vector2.zero;
         private Vector2 _playerTargetRotation = Vector2.zero; //need both camera and player rotation to animate correctly
 
+        private bool _isRotatingClockwise = false;
         private float _rotatingToTargetTimer = 0f;
         private float _verticalVelocity = 0f;
 
@@ -157,24 +158,26 @@ namespace Player_Assets.FinalCharacterController
 
             _playerTargetRotation.x += transform.eulerAngles.x + lookSenseH * _playerLocomotionInput.LookInput.x;
 
-            //if rotation mismatch not within tolerance, or rotate to target is active, ROTATE
-            //also rotate if we're not idling 
+            
+
             float rotationTolerance = 90f; //rotation threshold/limit
             bool isIdling = _playerState.CurrentPlayerMovementState == PlayerMovementState.Idling;
             IsRotatingToTarget = _rotatingToTargetTimer > 0f;
-            if(!isIdling || Mathf.Abs(RotationMismatch) > rotationTolerance || IsRotatingToTarget)
-            {
-                Quaternion targetRotationX = Quaternion.Euler(0f, _playerTargetRotation.x, 0f);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotationX, playerModelRotationSpeed * Time.deltaTime);
 
-                if(Mathf.Abs(RotationMismatch) > rotationTolerance)//when the camera > 90f, the player will start to rotate in this amount of time(rotate to target time), and will be reset again after it reaches 0
-                {
-                    _rotatingToTargetTimer = rotateToTargetTime; 
-                }
-                _rotatingToTargetTimer -= Time.deltaTime;
+            //rotate if we're not idling 
+            if (!isIdling)
+            {
+                RotatePlayerToTarget();
+
+
+            }
+            //if rotation mismatch not within tolerance, or rotate to target is active, ROTATE
+            else if (!isIdling || Mathf.Abs(RotationMismatch) > rotationTolerance || IsRotatingToTarget)
+            {
+                UpdateIdleRotation(rotationTolerance);
             }
 
-            _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.y, 0f);
+            _playerCamera.transform.rotation = Quaternion.Euler(_cameraRotation.y, _cameraRotation.x, 0f);
 
             //get angle between camera and player, update rotation mismatch(IMPORTANT - Try to understand this if you can)
             Vector3 camForwardProjectedXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized; //XZ mean in the xz plane(look at picture online)
@@ -182,6 +185,35 @@ namespace Player_Assets.FinalCharacterController
             float sign = Mathf.Sign(Vector3.Dot(crossProduct, transform.up));
             RotationMismatch = sign * Vector3.Angle(transform.forward, camForwardProjectedXZ);
 
+        }
+
+        private void UpdateIdleRotation(float rotationTolerance)
+        {
+            //innitiate new rotation direction 
+            if (Mathf.Abs(RotationMismatch) > rotationTolerance)//when the camera > 90f, the player will start to rotate in this amount of time(rotate to target time), and will be reset again after it reaches 0
+            {
+                _rotatingToTargetTimer = rotateToTargetTime;
+                _isRotatingClockwise = RotationMismatch > rotationTolerance;
+            }
+            _rotatingToTargetTimer -= Time.deltaTime;
+
+            //rotate player
+            if(_isRotatingClockwise && RotationMismatch > 0f || 
+                !_isRotatingClockwise && RotationMismatch < 0f) //to determine if we need to keep rotating in that direction or stop to synch with animation
+            {
+
+                RotatePlayerToTarget();
+
+
+            }
+
+
+        }
+
+        private void RotatePlayerToTarget()
+        {
+            Quaternion targetRotationX = Quaternion.Euler(0f, _playerTargetRotation.x, 0f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotationX, playerModelRotationSpeed * Time.deltaTime);
         }
 
         #endregion

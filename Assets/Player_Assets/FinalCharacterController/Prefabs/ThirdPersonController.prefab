@@ -2269,6 +2269,8 @@ MonoBehaviour:
   gravity: 25
   jumpSpeed: 1
   movingThreshold: 0.01
+  playerModelRotationSpeed: 10
+  rotateToTargetTime: 0.67
   lookSenseH: 0.1
   lookSenseV: 0.1
   lookLimitV: 70
