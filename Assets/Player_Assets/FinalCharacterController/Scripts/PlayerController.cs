@@ -18,10 +18,12 @@ namespace Player_Assets.FinalCharacterController
 
 
         [Header("Base Movement")]
+        public float walkAcceleration = 0.15f;
+        public float walkSpeed = 3f;
         public float runAcceleration = 0.25f;
-        public float runSpeed = 4f;
+        public float runSpeed = 6f;
         public float sprintAcceleration = 0.5f;
-        public float sprintSpeed = 7.0f;
+        public float sprintSpeed = 9f;
         public float drag = 0.1f;
         public float gravity = 25f;
         public float jumpSpeed = 1.0f;
@@ -68,13 +70,17 @@ namespace Player_Assets.FinalCharacterController
 
         private void UpdateMovementState()
         {
+            bool canRun = CanRun();
             bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero; //order matters
             bool isMovingLaterally = IsMovingLaterally();
             bool isSprinting = _playerLocomotionInput.SprintToggledOn && isMovingLaterally;
+            bool isWalking = (isMovingLaterally && !canRun) ||  _playerLocomotionInput.WalkToggleOn; //order matters
             bool isGrounded = IsGrounded();
 
-            PlayerMovementState lateralState = isSprinting ? PlayerMovementState.Sprinting : //check if we are sprinting, if not we are running or idling
-                isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling; //if we moving laterally or there is movement input, then we are in running state, else we are idling
+            PlayerMovementState lateralState =  isWalking ? PlayerMovementState.Walking :
+                                                isSprinting ? PlayerMovementState.Sprinting : //check if we are sprinting, if not we are running or idling
+                                                isMovingLaterally || isMovementInput ? PlayerMovementState.Running : PlayerMovementState.Idling; //if we moving laterally or there is movement input, then we are in running state, else we are idling
+            
             _playerState.SetPlayerMovementState(lateralState);
 
             //Control Airborn State
@@ -111,10 +117,13 @@ namespace Player_Assets.FinalCharacterController
             //Create quick references for current state
             bool isSprinting = _playerState.CurrentPlayerMovementState == PlayerMovementState.Sprinting;
             bool isGrounded = _playerState.InGroundedState();
+            bool isWalking = _playerState.CurrentPlayerMovementState == PlayerMovementState.Walking;
 
             //State  dependent acceleration and speed
-            float lateralAcceleration = isSprinting ? sprintAcceleration : runAcceleration; //if we sprinting we going at sprint acceleration, else, run acceleration
-            float clampLateralMagnitude = isSprinting ? sprintSpeed : runSpeed; //same like above but with sprint/run speed 
+            float lateralAcceleration = isWalking ? walkAcceleration :
+                                        isSprinting ? sprintAcceleration : runAcceleration; //if we sprinting we going at sprint acceleration, else, run acceleration
+            float clampLateralMagnitude =   isWalking ? walkSpeed :
+                                            isSprinting ? sprintSpeed : runSpeed; //same like above but with sprint/run speed 
 
 
             Vector3 cameraForwardXZ = new Vector3(_playerCamera.transform.forward.x, 0f, _playerCamera.transform.forward.z).normalized;
@@ -144,10 +153,6 @@ namespace Player_Assets.FinalCharacterController
             UpdateCameraRotation();
         }
 
-        private bool IsGrounded()
-        {
-            return _characterController.isGrounded;
-        }
 
         private void UpdateCameraRotation()
         {
@@ -225,6 +230,19 @@ namespace Player_Assets.FinalCharacterController
 
             return lateralVelocity.magnitude > movingThreshold;
         }
+
+        private bool IsGrounded()
+        {
+            return _characterController.isGrounded;
+        }
+
+        private bool CanRun()
+        {
+            //this means player is moving diagonally at 45 degress or forward, if so, we we can run.
+            //(Imagine a circle, and there a pizza shape in the top part of that circle, if you move forward, or move in the area of the pizza shape, that means you can run)
+            return _playerLocomotionInput.MovementInput.y >= Mathf.Abs(_playerLocomotionInput.MovementInput.x);
+        }
+
         #endregion
 
 

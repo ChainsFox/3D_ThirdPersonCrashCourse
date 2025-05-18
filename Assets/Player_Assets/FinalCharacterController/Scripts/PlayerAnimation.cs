@@ -46,7 +46,9 @@ namespace Player_Assets.FinalCharacterController
             bool isFalling = _playerState.CurrentPlayerMovementState == PlayerMovementState.Falling;
             bool isGrounded = _playerState.InGroundedState();
 
-            Vector2 inputTarget = isSprinting ? _playerLocomotionInput.MovementInput * 1.5f : _playerLocomotionInput.MovementInput; //input we going to(input of the player moving direction)
+            Vector2 inputTarget = isSprinting ? _playerLocomotionInput.MovementInput * 1.5f : 
+                                  isRunning ? _playerLocomotionInput.MovementInput * 1f : _playerLocomotionInput.MovementInput * 0.5f; //input we going to(input of the player moving direction)
+            
             _currentBlendInput = Vector3.Lerp(_currentBlendInput, inputTarget, locomotionBlendSpeed * Time.deltaTime); //slowly transition from currentBlendInput into our inputTarget with locomotion blend speed
 
 
