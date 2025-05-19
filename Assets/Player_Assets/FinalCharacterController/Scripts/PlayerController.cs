@@ -39,6 +39,9 @@ namespace Player_Assets.FinalCharacterController
         public float lookSenseV = 0.1f;
         public float lookLimitV = 89f; //clamp how high/low of an angle we can look, so that we dont spin around weirdly
 
+        [Header("Enviroment Details")]
+        [SerializeField] private LayerMask _groundLayers;
+
         private PlayerLocomotionInput _playerLocomotionInput;
         private PlayerState _playerState;
 
@@ -48,6 +51,7 @@ namespace Player_Assets.FinalCharacterController
         private bool _isRotatingClockwise = false;
         private float _rotatingToTargetTimer = 0f;
         private float _verticalVelocity = 0f;
+        private float _antiBump;
 
         #endregion
 
@@ -56,6 +60,9 @@ namespace Player_Assets.FinalCharacterController
         {
             _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
             _playerState = GetComponent<PlayerState>();
+
+
+            _antiBump = sprintSpeed; //we want the antiBump equal to our fastest possible velocity so that if we running down a 45 degree slope we wont skip(like skip a step)
         }
         #endregion
 
@@ -98,11 +105,13 @@ namespace Player_Assets.FinalCharacterController
         private void HandleVerticalMovement()
         {
             bool isGrounded = _playerState.InGroundedState();
+            
+            _verticalVelocity -= gravity * Time.deltaTime;
 
             if (isGrounded && _verticalVelocity < 0)
-                _verticalVelocity = 0f; //we dont want to be moving down if we already grounded
+                _verticalVelocity = -_antiBump; //we dont want to be moving down if we already grounded
 
-            _verticalVelocity -= gravity * Time.deltaTime;
+
 
             if(_playerLocomotionInput.JumpPressed && isGrounded)
             {
@@ -233,8 +242,25 @@ namespace Player_Assets.FinalCharacterController
 
         private bool IsGrounded()
         {
+            bool grounded = _playerState.InGroundedState() ? isGroundedWhileGrounded() : isGroundedWhileAirborne();
+
+            return grounded;
+        }
+
+        private bool isGroundedWhileGrounded()
+        {
+            Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - _characterController.radius, transform.position.z);
+
+            bool grounded =  Physics.CheckSphere(spherePosition, _characterController.radius, _groundLayers, QueryTriggerInteraction.Ignore);
+
+            return grounded;
+        }
+
+        private bool isGroundedWhileAirborne()
+        {
             return _characterController.isGrounded;
         }
+
 
         private bool CanRun()
         {
