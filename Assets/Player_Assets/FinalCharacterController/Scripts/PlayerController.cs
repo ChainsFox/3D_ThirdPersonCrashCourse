@@ -24,6 +24,7 @@ namespace Player_Assets.FinalCharacterController
         public float runSpeed = 6f;
         public float sprintAcceleration = 0.5f;
         public float sprintSpeed = 9f;
+        public float inAirAcceleration = 0.15f;
         public float drag = 0.1f;
         public float gravity = 25f;
         public float jumpSpeed = 1.0f;
@@ -48,10 +49,12 @@ namespace Player_Assets.FinalCharacterController
         private Vector2 _cameraRotation = Vector2.zero;
         private Vector2 _playerTargetRotation = Vector2.zero; //need both camera and player rotation to animate correctly
 
+        private bool _jumpedLastFrame = false;
         private bool _isRotatingClockwise = false;
         private float _rotatingToTargetTimer = 0f;
         private float _verticalVelocity = 0f;
         private float _antiBump;
+        private float _stepOffSet;
 
         #endregion
 
@@ -63,6 +66,7 @@ namespace Player_Assets.FinalCharacterController
 
 
             _antiBump = sprintSpeed; //we want the antiBump equal to our fastest possible velocity so that if we running down a 45 degree slope we wont skip(like skip a step)
+            _stepOffSet = _characterController.stepOffset;
         }
         #endregion
 
@@ -91,13 +95,21 @@ namespace Player_Assets.FinalCharacterController
             _playerState.SetPlayerMovementState(lateralState);
 
             //Control Airborn State
-            if(!isGrounded && _characterController.velocity.y >= 0)
+            if((!isGrounded || _jumpedLastFrame) && _characterController.velocity.y >= 0)
             {
                 _playerState.SetPlayerMovementState(PlayerMovementState.Jumping);
+                _jumpedLastFrame = false;
+                _characterController.stepOffset = 0f;
             }
-            else if(!isGrounded && _characterController.velocity.y < 0)
+            else if((!isGrounded || _jumpedLastFrame) && _characterController.velocity.y < 0)
             {
                 _playerState.SetPlayerMovementState(PlayerMovementState.Falling);
+                _jumpedLastFrame = false;
+                _characterController.stepOffset = 0f;
+            }
+            else
+            {
+                _characterController.stepOffset = _stepOffSet;
             }
 
         }
@@ -115,7 +127,8 @@ namespace Player_Assets.FinalCharacterController
 
             if(_playerLocomotionInput.JumpPressed && isGrounded)
             {
-                _verticalVelocity += Mathf.Sqrt(jumpSpeed * 3 * gravity);
+                _verticalVelocity += _antiBump + Mathf.Sqrt(jumpSpeed * 3 * gravity);
+                _jumpedLastFrame = true;
             } 
                 
 
@@ -129,9 +142,11 @@ namespace Player_Assets.FinalCharacterController
             bool isWalking = _playerState.CurrentPlayerMovementState == PlayerMovementState.Walking;
 
             //State  dependent acceleration and speed
-            float lateralAcceleration = isWalking ? walkAcceleration :
+            float lateralAcceleration = !isGrounded ? inAirAcceleration :
+                                        isWalking ? walkAcceleration :
                                         isSprinting ? sprintAcceleration : runAcceleration; //if we sprinting we going at sprint acceleration, else, run acceleration
-            float clampLateralMagnitude =   isWalking ? walkSpeed :
+            float clampLateralMagnitude =   !isGrounded ? sprintSpeed :
+                                            isWalking ? walkSpeed :
                                             isSprinting ? sprintSpeed : runSpeed; //same like above but with sprint/run speed 
 
 
@@ -145,7 +160,7 @@ namespace Player_Assets.FinalCharacterController
             //Add drag to player
             Vector3 currentDrag = newVelocity.normalized * drag * Time.deltaTime;
             newVelocity = (newVelocity.magnitude > drag * Time.deltaTime) ? newVelocity - currentDrag : Vector3.zero; //this is a ternary operator(basically a if else statement in 1 line)
-            newVelocity = Vector3.ClampMagnitude(newVelocity, clampLateralMagnitude);// to make sure our acceleration doesn't go further than our maxium run speed
+            newVelocity = Vector3.ClampMagnitude(new Vector3(newVelocity.x, 0f, newVelocity.z), clampLateralMagnitude);// to make sure our acceleration doesn't go further than our maxium run speed
             newVelocity.y += _verticalVelocity;
 
 

@@ -2231,7 +2231,7 @@ CharacterController:
   m_Radius: 0.3
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.0001
+  m_SkinWidth: 0.01
   m_MinMoveDistance: 0.00001
   m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &1758041362498380309
@@ -2267,6 +2267,7 @@ MonoBehaviour:
   runSpeed: 4
   sprintAcceleration: 50
   sprintSpeed: 7
+  inAirAcceleration: 25
   drag: 20
   gravity: 25
   jumpSpeed: 1
