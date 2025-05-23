@@ -56,6 +56,8 @@ namespace Player_Assets.FinalCharacterController
         private float _antiBump;
         private float _stepOffSet;
 
+        private PlayerMovementState _lastMovementState = PlayerMovementState.Falling;
+
         #endregion
 
         #region Startup
@@ -81,6 +83,8 @@ namespace Player_Assets.FinalCharacterController
 
         private void UpdateMovementState()
         {
+            _lastMovementState = _playerState.CurrentPlayerMovementState; //to save our previous state 
+
             bool canRun = CanRun();
             bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero; //order matters
             bool isMovingLaterally = IsMovingLaterally();
@@ -127,10 +131,14 @@ namespace Player_Assets.FinalCharacterController
 
             if(_playerLocomotionInput.JumpPressed && isGrounded)
             {
-                _verticalVelocity += _antiBump + Mathf.Sqrt(jumpSpeed * 3 * gravity);
+                _verticalVelocity += Mathf.Sqrt(jumpSpeed * 3 * gravity);
                 _jumpedLastFrame = true;
             } 
                 
+            if(_playerState.IsStateGroundedState(_lastMovementState) && !isGrounded)//check if last state was grounded or not and check if we are switching from grounded to not grounded, if it was, then do the following below
+            {
+                _verticalVelocity += _antiBump;//add antibump to vertical velocity to offset the antibump value
+            }
 
         }
 
@@ -162,10 +170,25 @@ namespace Player_Assets.FinalCharacterController
             newVelocity = (newVelocity.magnitude > drag * Time.deltaTime) ? newVelocity - currentDrag : Vector3.zero; //this is a ternary operator(basically a if else statement in 1 line)
             newVelocity = Vector3.ClampMagnitude(new Vector3(newVelocity.x, 0f, newVelocity.z), clampLateralMagnitude);// to make sure our acceleration doesn't go further than our maxium run speed
             newVelocity.y += _verticalVelocity;
+            newVelocity = !isGrounded ? HandleSteepWalls(newVelocity) : newVelocity;  
 
 
             //Move charater (unity suggest only calling this once per tick)
             _characterController.Move(newVelocity * Time.deltaTime); //physically move the player
+        }
+
+        private Vector3 HandleSteepWalls(Vector3 velocity)
+        {
+            Vector3 normal = CharacterControllerUtils.GetNormalWithSphereCast(_characterController, _groundLayers); 
+            float angle = Vector3.Angle(normal, Vector3.up);
+            bool validAngle = angle <= _characterController.slopeLimit;
+
+            if(!validAngle && _verticalVelocity < 0f)
+            {
+                velocity = Vector3.ProjectOnPlane(velocity, normal);
+            }
+
+            return velocity;
         }
 
         #endregion
@@ -273,7 +296,12 @@ namespace Player_Assets.FinalCharacterController
 
         private bool isGroundedWhileAirborne()
         {
-            return _characterController.isGrounded;
+            Vector3 normal = CharacterControllerUtils.GetNormalWithSphereCast(_characterController, _groundLayers); 
+            float angle = Vector3.Angle(normal, Vector3.up);
+            print(angle);
+            bool validAngle = angle <= _characterController.slopeLimit;
+
+            return _characterController.isGrounded && validAngle; //Explain: land on slope with 45 degrees or less for us to be grounded, otherwise we gonna keep sliding down to the ground
         }
 
 

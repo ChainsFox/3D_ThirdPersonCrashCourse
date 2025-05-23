@@ -52,7 +52,7 @@ namespace Player_Assets.FinalCharacterController
         public void OnMovement(InputAction.CallbackContext context)
         {
             MovementInput = context.ReadValue<Vector2>(); //we printing out direction in a vector 2 format - use to control player movement
-            print(MovementInput);
+            //print(MovementInput);
         }
 
         public void OnLook(InputAction.CallbackContext context)

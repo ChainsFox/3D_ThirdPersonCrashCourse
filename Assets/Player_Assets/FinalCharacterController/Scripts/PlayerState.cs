@@ -16,10 +16,16 @@ namespace Player_Assets.FinalCharacterController
         
         public bool InGroundedState()
         {//return true if we are in idling, walking... state
-            return CurrentPlayerMovementState == PlayerMovementState.Idling ||
-                    CurrentPlayerMovementState == PlayerMovementState.Walking ||
-                    CurrentPlayerMovementState == PlayerMovementState.Running ||
-                    CurrentPlayerMovementState == PlayerMovementState.Sprinting;
+            return IsStateGroundedState(CurrentPlayerMovementState); 
+        }
+
+        public bool IsStateGroundedState(PlayerMovementState movementState)
+        {
+            return movementState == PlayerMovementState.Idling ||
+                   movementState == PlayerMovementState.Walking ||
+                   movementState == PlayerMovementState.Running ||
+                   movementState == PlayerMovementState.Sprinting;
+
         }
 
     }
