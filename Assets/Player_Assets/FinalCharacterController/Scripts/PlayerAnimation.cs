@@ -25,6 +25,10 @@ namespace Player_Assets.FinalCharacterController
 
         private Vector3 _currentBlendInput = Vector3.zero; //default zero value for blend input
 
+        private float _sprintMaxBlendValue = 1.5f;
+        private float _runMaxBlendValue = 1.0f;
+        private float _walkMaxBlendValue = 0.5f;
+
         private void Awake()
         {
             _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
@@ -46,8 +50,10 @@ namespace Player_Assets.FinalCharacterController
             bool isFalling = _playerState.CurrentPlayerMovementState == PlayerMovementState.Falling;
             bool isGrounded = _playerState.InGroundedState();
 
-            Vector2 inputTarget = isSprinting ? _playerLocomotionInput.MovementInput * 1.5f : 
-                                  isRunning ? _playerLocomotionInput.MovementInput * 1f : _playerLocomotionInput.MovementInput * 0.5f; //input we going to(input of the player moving direction)
+            bool isRunBlendValue = isRunning || isJumping || isFalling; //is true if we are run jump or falling
+
+            Vector2 inputTarget = isSprinting ? _playerLocomotionInput.MovementInput * _sprintMaxBlendValue :
+                                  isRunBlendValue ? _playerLocomotionInput.MovementInput * _runMaxBlendValue : _playerLocomotionInput.MovementInput * _walkMaxBlendValue; //input we going to(input of the player moving direction)
             
             _currentBlendInput = Vector3.Lerp(_currentBlendInput, inputTarget, locomotionBlendSpeed * Time.deltaTime); //slowly transition from currentBlendInput into our inputTarget with locomotion blend speed
 

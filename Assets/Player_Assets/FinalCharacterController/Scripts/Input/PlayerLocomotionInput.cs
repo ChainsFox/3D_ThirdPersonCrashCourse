@@ -12,7 +12,6 @@ namespace Player_Assets.FinalCharacterController
         #region Class Variables
         [SerializeField] private bool holdToSprint = true;
 
-        public PlayerControls PlayerControls {  get; private set; }
         public Vector2 MovementInput { get; private set; }
 
         public Vector2 LookInput { get; private set; }
@@ -26,18 +25,28 @@ namespace Player_Assets.FinalCharacterController
         #region Startup
         private void OnEnable()
         {
-            PlayerControls = new PlayerControls();
-            PlayerControls.Enable();
+            if(PlayerInputManager.Instance?.PlayerControls == null) //"PlayerInputManager.Instance?" - this is a null conditional operators, check if instance is not null, then check if playercontrols is null
+            {
+                Debug.LogError("Player controls is not initialized - cannot enable"); //guard check to make sure player controls is initialize/if either instance or player controls is null then print warning
+                return; //return if this condition is true so that the code below doesnt run
+            }
 
-            PlayerControls.PlayerLocomotionMap.Enable();
-            PlayerControls.PlayerLocomotionMap.SetCallbacks(this);
+
+            PlayerInputManager.Instance.PlayerControls.PlayerLocomotionMap.Enable();
+            PlayerInputManager.Instance.PlayerControls.PlayerLocomotionMap.SetCallbacks(this);
 
         }
 
         private void OnDisable()
         {
-            PlayerControls.PlayerLocomotionMap.Disable();
-            PlayerControls.PlayerLocomotionMap.RemoveCallbacks(this);
+            if (PlayerInputManager.Instance?.PlayerControls == null)
+            {
+                Debug.LogError("Player controls is not initialized - cannot disable");
+                return;
+            }
+
+            PlayerInputManager.Instance.PlayerControls.PlayerLocomotionMap.Disable();
+            PlayerInputManager.Instance.PlayerControls.PlayerLocomotionMap.RemoveCallbacks(this);
         }
         #endregion
 

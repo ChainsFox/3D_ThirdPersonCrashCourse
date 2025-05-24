@@ -27,6 +27,7 @@ namespace Player_Assets.FinalCharacterController
         public float inAirAcceleration = 0.15f;
         public float drag = 0.1f;
         public float gravity = 25f;
+        public float terminalVelocity = 50f;
         public float jumpSpeed = 1.0f;
         public float movingThreshold = 0.01f;
 
@@ -138,6 +139,11 @@ namespace Player_Assets.FinalCharacterController
             if(_playerState.IsStateGroundedState(_lastMovementState) && !isGrounded)//check if last state was grounded or not and check if we are switching from grounded to not grounded, if it was, then do the following below
             {
                 _verticalVelocity += _antiBump;//add antibump to vertical velocity to offset the antibump value
+            }
+
+            if(Mathf.Abs(_verticalVelocity) > Mathf.Abs(terminalVelocity))
+            {
+                _verticalVelocity = -1f * Mathf.Abs(terminalVelocity); //cap the maxium velocity that we can reach for positive and negative numbers(up and down), so that we dont go into the speed force
             }
 
         }
@@ -298,7 +304,7 @@ namespace Player_Assets.FinalCharacterController
         {
             Vector3 normal = CharacterControllerUtils.GetNormalWithSphereCast(_characterController, _groundLayers); 
             float angle = Vector3.Angle(normal, Vector3.up);
-            print(angle);
+            //print(angle);
             bool validAngle = angle <= _characterController.slopeLimit;
 
             return _characterController.isGrounded && validAngle; //Explain: land on slope with 45 degrees or less for us to be grounded, otherwise we gonna keep sliding down to the ground
