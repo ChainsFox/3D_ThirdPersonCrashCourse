@@ -207,6 +207,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "ThirdPersonMap",
+            "id": "5d5462c8-71c9-454a-b9c4-62f6306fd7a0",
+            "actions": [
+                {
+                    "name": "ScrollCamera",
+                    "type": "Value",
+                    "id": "29cab4bd-b131-4e3a-8e93-de1054baa539",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "281b0b4f-cb07-4e9e-bfcf-652b63fdbf63",
+                    "path": "<Mouse>/scroll",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ScrollCamera",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []
