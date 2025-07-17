@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Player_Assets.FinalCharacterController
@@ -12,7 +13,9 @@ namespace Player_Assets.FinalCharacterController
         private PlayerLocomotionInput _playerLocomotionInput;
         private PlayerState _playerState;
         private PlayerController _playerController;
+        private PlayerActionsInput _playerActionsInput;
 
+        //Locomotion
         private static int inputXHash = Animator.StringToHash("inputX");
         private static int inputYHash = Animator.StringToHash("inputY");
         private static int inputMagnitudeHash = Animator.StringToHash("inputMagnitude");
@@ -20,8 +23,19 @@ namespace Player_Assets.FinalCharacterController
         private static int isGroundedHash = Animator.StringToHash("isGrounded");
         private static int isFallingHash = Animator.StringToHash("isFalling");
         private static int isJumpingHash = Animator.StringToHash("isJumping");
+
+
+
+        //Actions
+        private static int isAttackingHash = Animator.StringToHash("isAttacking");
+        private static int isGatheringHash = Animator.StringToHash("isGathering");
+        private static int isPlayingActionHash = Animator.StringToHash("isPlayingAction");
+        private int[] actionHashes; //to store all hashes that count as a action
+
+        //Camera/Rotations
         private static int isRotatingToTargetHash = Animator.StringToHash("isRotatingToTarget");
         private static int rotationMismatchHash = Animator.StringToHash("rotationMismatch");
+
 
         private Vector3 _currentBlendInput = Vector3.zero; //default zero value for blend input
 
@@ -34,6 +48,9 @@ namespace Player_Assets.FinalCharacterController
             _playerLocomotionInput = GetComponent<PlayerLocomotionInput>();
             _playerState = GetComponent<PlayerState>();
             _playerController = GetComponent<PlayerController>();
+            _playerActionsInput = GetComponent <PlayerActionsInput>();
+
+            actionHashes = new int[] {isGatheringHash, isAttackingHash };
         }
 
         private void Update()
@@ -49,6 +66,7 @@ namespace Player_Assets.FinalCharacterController
             bool isJumping = _playerState.CurrentPlayerMovementState == PlayerMovementState.Jumping;
             bool isFalling = _playerState.CurrentPlayerMovementState == PlayerMovementState.Falling;
             bool isGrounded = _playerState.InGroundedState();
+            bool isPlayingAction = actionHashes.Any(hash => _animator.GetBool(hash)); //for all the action hashes, we get the boolean value of that hash, and check its value, if any of them are true, then we return true for the lambda function
 
             bool isRunBlendValue = isRunning || isJumping || isFalling; //is true if we are run jump or falling
 
@@ -63,6 +81,9 @@ namespace Player_Assets.FinalCharacterController
             _animator.SetBool(isFallingHash, isFalling);
             _animator.SetBool(isJumpingHash, isJumping);
             _animator.SetBool(isRotatingToTargetHash, _playerController.IsRotatingToTarget);
+            _animator.SetBool(isAttackingHash, _playerActionsInput.AttackPressed);
+            _animator.SetBool(isGatheringHash, _playerActionsInput.GatherPressed);
+            _animator.SetBool(isPlayingActionHash, isPlayingAction);
 
 
             _animator.SetFloat(inputXHash, _currentBlendInput.x); //set the value for animation

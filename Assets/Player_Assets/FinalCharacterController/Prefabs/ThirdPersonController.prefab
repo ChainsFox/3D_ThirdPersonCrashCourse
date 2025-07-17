@@ -2162,6 +2162,7 @@ GameObject:
   - component: {fileID: 7268229409193109875}
   - component: {fileID: 236230436004490950}
   - component: {fileID: 3080919691983400721}
+  - component: {fileID: 3491803991665315873}
   m_Layer: 0
   m_Name: ThirdPersonController
   m_TagString: Untagged
@@ -2325,6 +2326,18 @@ MonoBehaviour:
   _cameraZoomSpeed: 0.2
   _cameraMinZoom: 1
   _cameraMaxZoom: 5
+--- !u!114 &3491803991665315873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2302463400223729398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47c3ba0c371f8c9459a818100fd01f40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2461892806501671831
 GameObject:
   m_ObjectHideFlags: 0
@@ -2615,7 +2628,7 @@ Transform:
   m_GameObject: {fileID: 2817038007029423239}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.7000003, z: -2}
+  m_LocalPosition: {x: 0, y: 0.60000014, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4556,7 +4569,7 @@ Transform:
   m_GameObject: {fileID: 5757785483084760296}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.7000003, z: -2}
+  m_LocalPosition: {x: 0, y: 0.60000014, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4595,7 +4608,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 80
+  field of view: 65
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
