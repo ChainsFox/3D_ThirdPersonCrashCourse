@@ -11,12 +11,20 @@ namespace Player_Assets.FinalCharacterController
     public class PlayerActionsInput : MonoBehaviour, PlayerControls.IPlayerActionMapActions
     {
         #region Class Variables
+        private PlayerLocomotionInput _PlayerLocomotionInput;
+        private PlayerState _PlayerState;
         public bool AttackPressed { get; private set; }
         public bool GatherPressed { get; private set; }
 
         #endregion
 
         #region Startup
+        private void Awake()
+        {
+            _PlayerLocomotionInput = GetComponent<PlayerLocomotionInput>();
+            _PlayerState = GetComponent<PlayerState>();
+        }
+
 
         private void OnEnable()
         {
@@ -48,6 +56,17 @@ namespace Player_Assets.FinalCharacterController
         #endregion
 
         #region Update
+
+        private void Update()
+        {
+            if(_PlayerLocomotionInput.MovementInput != Vector2.zero || //if we try to move while we pressed "gather" or "attack", it will cancel it
+                _PlayerState.CurrentPlayerMovementState == PlayerMovementState.Jumping ||
+                _PlayerState.CurrentPlayerMovementState == PlayerMovementState.Falling)
+            {
+                GatherPressed = false;
+
+            }
+        }
 
         public void SetGatherPressedFalse()
         {

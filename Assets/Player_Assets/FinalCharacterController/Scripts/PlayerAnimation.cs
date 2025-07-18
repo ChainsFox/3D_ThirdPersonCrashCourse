@@ -50,7 +50,7 @@ namespace Player_Assets.FinalCharacterController
             _playerController = GetComponent<PlayerController>();
             _playerActionsInput = GetComponent <PlayerActionsInput>();
 
-            actionHashes = new int[] {isGatheringHash, isAttackingHash };
+            actionHashes = new int[] {isGatheringHash };
         }
 
         private void Update()
