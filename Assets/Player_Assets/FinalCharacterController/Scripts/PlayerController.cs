@@ -18,14 +18,15 @@ namespace Player_Assets.FinalCharacterController
 
 
         [Header("Base Movement")]
-        public float walkAcceleration = 0.15f;
-        public float walkSpeed = 3f;
-        public float runAcceleration = 0.25f;
-        public float runSpeed = 6f;
-        public float sprintAcceleration = 0.5f;
-        public float sprintSpeed = 9f;
-        public float inAirAcceleration = 0.15f;
-        public float drag = 0.1f;
+        public float walkAcceleration = 25f;
+        public float walkSpeed = 2f;
+        public float runAcceleration = 35f;
+        public float runSpeed = 4f;
+        public float sprintAcceleration = 50;
+        public float sprintSpeed = 7f;
+        public float inAirAcceleration = 25f;
+        public float drag = 20f;
+        public float inAirDrag = 5f;
         public float gravity = 25f;
         public float terminalVelocity = 50f;
         public float jumpSpeed = 1.0f;
@@ -90,7 +91,8 @@ namespace Player_Assets.FinalCharacterController
             bool isMovementInput = _playerLocomotionInput.MovementInput != Vector2.zero; //order matters
             bool isMovingLaterally = IsMovingLaterally();
             bool isSprinting = _playerLocomotionInput.SprintToggledOn && isMovingLaterally;
-            bool isWalking = (isMovingLaterally && !canRun) ||  _playerLocomotionInput.WalkToggleOn; //order matters
+            bool isWalking = isMovingLaterally && (!canRun || _playerLocomotionInput.WalkToggleOn);
+            //bool isWalking = (isMovingLaterally && !canRun) ||  _playerLocomotionInput.WalkToggleOn; //old wrong one
             bool isGrounded = IsGrounded();
 
             PlayerMovementState lateralState =  isWalking ? PlayerMovementState.Walking :
@@ -172,8 +174,9 @@ namespace Player_Assets.FinalCharacterController
             Vector3 newVelocity = _characterController.velocity + movementDelta; //move the player into new velocity/position
 
             //Add drag to player
-            Vector3 currentDrag = newVelocity.normalized * drag * Time.deltaTime;
-            newVelocity = (newVelocity.magnitude > drag * Time.deltaTime) ? newVelocity - currentDrag : Vector3.zero; //this is a ternary operator(basically a if else statement in 1 line)
+            float dragMagnitude = isGrounded ? drag : inAirDrag; //if we grounded, use normal drag, if not we use air drag
+            Vector3 currentDrag = newVelocity.normalized * dragMagnitude * Time.deltaTime;
+            newVelocity = (newVelocity.magnitude > dragMagnitude * Time.deltaTime) ? newVelocity - currentDrag : Vector3.zero; //this is a ternary operator(basically a if else statement in 1 line)
             newVelocity = Vector3.ClampMagnitude(new Vector3(newVelocity.x, 0f, newVelocity.z), clampLateralMagnitude);// to make sure our acceleration doesn't go further than our maxium run speed
             newVelocity.y += _verticalVelocity;
             newVelocity = !isGrounded ? HandleSteepWalls(newVelocity) : newVelocity;  
